@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Eshop</title>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>name</th>
+                <th>price</th>
+                <th>Åtgärder</th>
+            </tr>
+        </thead>
+        <tbody id="product-list">
+        </tbody>
+    </table>
+    <h2>Lägg till produkt</h2>
+    <form id="add-product-form">
+        <label for="name">Namn</label>
+        <input type="text" id="name" name="name"><br>
+        <label for="price">Pris</label>
+        <input type="number" id="price" name="price"><br>
+        <input type="submit" value="Lägg till">
+    </form>
+    <h2>Ta bort produkt</h2>
+    <form id="delete-product-form">
+        <label for="id">ID</label>
+        <input type="number" id="id" name="id"><br>
+        <input type="submit" value="Ta bort">
+    </form>
+</body>
+<script>
+    const productList = document.querySelector('#product-list');
+
+    // Hämta alla produkter från API:et och visa dem i tabellen
+    fetch('/products')
+        .then(response => response.json())
+        .then(products => {
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>${product.price}</td>
+                    <td><button onclick="deleteProduct(${product.id})">Ta bort</button></td>
+                `;
+                productList.appendChild(row);
+            });
+        });
+
+    // Lägg till en ny produkt när formuläret skickas
+    const addProductForm = document.querySelector('#add-product-form');
+    addProductForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const name = document.querySelector('#name').value;
+        const price = document.querySelector('#price').value;
+        fetch('/products', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                price: price
+            })
+        })
+        .then(response => {
+            alert('Produkt tillagd');
+            location.reload();
+        })
+    });
+
+    // Ta bort en produkt när formuläret skickas
+    const deleteProductForm = document.querySelector('#delete-product-form');
+    deleteProductForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const id = document.querySelector('#id').value;
+        fetch(`/products/${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            alert('Produkt borttagen');
+            location.reload();
+        })
+    });
+
+    // Funktion för att ta bort en produkt från tabellen
+    function deleteProduct(id) {
+        fetch(`/products/${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            alert('Produkt borttagen');
+            location.reload();
+        })
+    }
+</script>
+</html>
